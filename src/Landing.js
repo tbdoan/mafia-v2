@@ -21,24 +21,31 @@ const Landing = ({db, setGameID}) => {
     }
 
     const createNewGame = async () => {
+        //creates new game
         const docRef = db.collection('games').doc();
-
         await docRef.set({
             gameState: 'pregame',
             players: []
         });
+        //sets gameID on client side
         setGameID(docRef.id);
     }
 
     const joinGame = (gameCode) => {
+        //remove whitespace
         gameCode = gameCode.replace(/\s/g, '');
+        //allow only alphanumeric
+        if(/[^a-zA-Z0-9]/.test(gameCode)) {
+            return 'Game Not Found';
+        }
         const docRef = db.collection('games').doc(gameCode);
-        docRef.get()
+        return docRef.get()
             .then((docSnapshot) => {
                 if (docSnapshot.exists) {
                     setGameID(docRef.id);
+                    return null;
                 } else {
-                    return false;
+                    return 'Game Not Found';
                 }
             });
     }

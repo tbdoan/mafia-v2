@@ -9,12 +9,15 @@ const Form = ({customSubmit, label}) => {
         setInput(e.target.value);
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if(input === '') {
             setError('Pls type something');
-        } else if ( !customSubmit(input) ) {
-            setTimeout(() => setError('Game not found'), 500);
+        } else {
+            const errMsg = await customSubmit(input);
+            if( errMsg ) {
+                setError(errMsg);
+            }
         }
     }
 

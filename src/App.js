@@ -34,8 +34,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if(gameID !== '')
-      setGameState('pregame')
+    if(gameID !== '') {
+      const doc = db.collection('games').doc(gameID);
+      const observer = doc.onSnapshot(docSnapshot => {
+        setPlayers(docSnapshot.data().players);
+        setGameState(docSnapshot.data().gameState);
+      }, err => {
+        console.log(`Encountered error: ${err}`);
+      });
+    }
   }, [gameID]);
 
   if (gameState === 'landing') {
@@ -49,8 +56,15 @@ function App() {
       <Pregame
         db={db}
         gameID={gameID}
+        name={name}
+        setName={setName}
+        players={players}
         />
     );
+  } else if(gameState === 'night') {
+    return (
+      <Night/>
+    )
   }
 }
 

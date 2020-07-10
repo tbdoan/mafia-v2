@@ -1,15 +1,17 @@
 import React from 'react';
+import Type from '@material-ui/core/Typography';
 
 /**
  * List of Players
- * 
+ *
  */
 const PlayerList = ({players}) => {
+    console.log(players);
   return players.map((player, index) => {
     return (
-      <div key={index}>
-        <h3>{player.name}</h3>
-      </div>
+      <Type variant='h6' key={index}>
+        {player.name}
+      </Type>
     )
   })
 };
