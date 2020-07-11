@@ -4,12 +4,13 @@ import firebase from 'firebase'
 
 import Landing from './Landing'
 import Pregame from './Pregame'
+import Night from './Night'
+import Spectator from './Spectator'
 import './App.css';
 
 function App() {
   const [name, setName] = useState('');
   const [gameID, setGameID] = useState('');
-  const [players, setPlayers] = useState([]);
   const [gameState, setGameState] = useState('landing');
   const [db, setDb] = useState({});
 
@@ -36,8 +37,7 @@ function App() {
   useEffect(() => {
     if(gameID !== '') {
       const doc = db.collection('games').doc(gameID);
-      const observer = doc.onSnapshot(docSnapshot => {
-        setPlayers(docSnapshot.data().players);
+      doc.onSnapshot(docSnapshot => {
         setGameState(docSnapshot.data().gameState);
       }, err => {
         console.log(`Encountered error: ${err}`);
@@ -58,12 +58,18 @@ function App() {
         gameID={gameID}
         name={name}
         setName={setName}
-        players={players}
         />
     );
+  } else if(name === '') {
+    return (
+      <Spectator />
+    )
   } else if(gameState === 'night') {
     return (
-      <Night/>
+      <Night
+        gameID={gameID}
+        name={name}
+        db={db}/>
     )
   }
 }

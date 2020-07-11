@@ -25,7 +25,7 @@ const Landing = ({db, setGameID}) => {
         const docRef = db.collection('games').doc();
         await docRef.set({
             gameState: 'pregame',
-            players: []
+            players: [],
         });
         //sets gameID on client side
         setGameID(docRef.id);

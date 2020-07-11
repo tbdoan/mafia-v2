@@ -6,14 +6,14 @@ import Type from '@material-ui/core/Typography';
  *
  */
 const PlayerList = ({players}) => {
-    console.log(players);
-  return players.map((player, index) => {
-    return (
-      <Type variant='h6' key={index}>
-        {player.name}
-      </Type>
-    )
-  })
+    if(!Array.isArray(players)) {return <br/>}
+    return players.map((player, index) => {
+        return (
+            <Type variant='h6' key={index}>
+            {player.name}
+            </Type>
+        )
+    })
 };
 
 export default PlayerList;

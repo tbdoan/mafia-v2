@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import PlayerList from './components/PlayerList'
 import firebase from 'firebase'
 
@@ -9,10 +9,21 @@ import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import Alert from '@material-ui/lab/Alert'
 
-const Pregame = ({gameID, db, name, setName, players}) => {
-
+const Pregame = ({gameID, db, name, setName}) => {
+    const [players, setPlayers] = useState([]);
     const [nameEntered, setNameEntered] = useState(false);
     const [showError, setShowError] = useState(false);
+
+    useEffect(() => {
+        if(gameID !== '') {
+          const doc = db.collection('games').doc(gameID);
+          doc.onSnapshot(docSnapshot => {
+            setPlayers(docSnapshot.data().players);
+          }, err => {
+            console.log(`Encountered error: ${err}`);
+          });
+        }
+      }, [gameID, db]);
 
     const addPlayer = async (name) => {
         if( typeof players.find(p => p.name === name) === 'undefined' ) {
@@ -38,31 +49,46 @@ const Pregame = ({gameID, db, name, setName, players}) => {
             const numNurse = Math.floor(players.length/4);
             const numDetec = Math.floor(players.length/4);
             let i = 0;
+            const gameRef = db.collection('games').doc(gameID);
+            let MafiaPlayers = [];
+            let NursePlayers = [];
+            let DetectivePlayers = [];
+            let CivilianPlayers = [];
+
             while(i < numMafia) {
                 players[i].role = 'Mafia';
-                i++
+                MafiaPlayers.push(players[i]);
+                i++;
             }
             while(i < numMafia + numNurse) {
                 players[i].role = 'Nurse';
-                i++
+                NursePlayers.push(players[i]);
+                i++;
             }
             while(i < numMafia + numNurse + numDetec) {
-                players[i].role = 'Detec';
-                i++
+                players[i].role = 'Detective';
+                DetectivePlayers.push(players[i]);
+                i++;
             }
             while(i < players.length) {
-                players[i].role = 'Civil';
-                i++
+                players[i].role = 'Civilian';
+                CivilianPlayers.push(players[i]);
+                i++;
             }
-            const gameRef = db.collection('games').doc(gameID);
+
             await gameRef.update({
-                gameState : 'night',
-                players : players
-            })
+                gameState: 'night',
+                //TODO: UNCOMMENT LATER
+                //players: firebase.firestore.FieldValue.delete(),
+                MafiaPlayers: MafiaPlayers,
+                NursePlayers: NursePlayers,
+                DetectivePlayers: DetectivePlayers,
+                CivilianPlayers: CivilianPlayers
+            });
+
         } else {
             setShowError(true);
         }
-        console.log(players);
     }
 
     return (
@@ -76,19 +102,21 @@ const Pregame = ({gameID, db, name, setName, players}) => {
                 { !nameEntered
                     ? <Form label='Enter Name' customSubmit={addPlayer}/>
                     : <Type variant='h4' align='center'>
+                        {/*TODO: delete following line*/}
+                        <Form label='Enter Name' customSubmit={addPlayer}/>
                         Welcome to Mafia, <Type display='inline'
                                             variant='h4'
                                             color='secondary'>{name}</Type>. <br/>
                         <Button m={10} variant='contained' onClick={assignRoles}> Start Game </Button>
-                        <Type variant='h5'>Here are your players:</Type>
                         {showError
                             ? <Alert severity="error"> Requires 6 players to play.
                             You have {players.length} </Alert>
                             : <div/>
                         }
-                        <PlayerList players={players}/>
                     </Type>
                 }
+                <Type variant='h5'>Here are your players:</Type>
+                <PlayerList players={players}/>
             </Box>
         </Container>
 
