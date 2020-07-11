@@ -12,16 +12,17 @@ const Spectator = ({docSnapshot, name}) => {
 
     return (
         <Type variant='h4' align='center'>
-            <h1>WELCOME TO SPECTATOR MODE (WIP)</h1>
-            Name: {name}
-            
-            ? <br/>
-            : <Type >
+            <h4>WELCOME TO SPECTATOR MODE (WIP)</h4>
 
-                Your current Mafia are: {MafiaPlayers}
-                Your current Detectives are: {DetectivePlayers}
-                Your current Nurses are: {NursePlayers}
-                Your current Civilians are: {CivilianPlayers}
+             <Type >
+                Your current Mafia are: 
+                <PlayerList players={MafiaPlayers}/>
+                Your current Detectives are: 
+                <PlayerList players={DetectivePlayers}/>
+                Your current Nurses are: 
+                <PlayerList players={NursePlayers}/>
+                Your current Civilians are:
+                <PlayerList players={CivilianPlayers}/>
                 </Type>
             
         </Type>

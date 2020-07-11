@@ -5,7 +5,7 @@ import firebase from 'firebase'
 import Landing from './Landing'
 import Pregame from './Pregame'
 import Night from './Night'
-//import Spectator from './Spectator'
+import Spectator from './Spectator'
 import './App.css';
 
 function App() {
