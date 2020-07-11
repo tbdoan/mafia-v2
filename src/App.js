@@ -13,6 +13,7 @@ function App() {
   const [gameID, setGameID] = useState('');
   const [gameState, setGameState] = useState('landing');
   const [db, setDb] = useState({});
+  const [docSnapshot, setDocSnapshot] = useState();
 
   //"constructor"
   useEffect(() => {
@@ -38,6 +39,7 @@ function App() {
     if(gameID !== '') {
       const doc = db.collection('games').doc(gameID);
       doc.onSnapshot(docSnapshot => {
+        setDocSnapshot(docSnapshot)
         setGameState(docSnapshot.data().gameState);
       }, err => {
         console.log(`Encountered error: ${err}`);
@@ -60,9 +62,13 @@ function App() {
         setName={setName}
         />
     );
-  } else if(name === '') {
+  } else if(name === 'spectator') {
     return (
-      <Spectator />
+      <Spectator
+      db={db}
+      gameID={gameID}
+      name={name} 
+      docSnapshot={docSnapshot} />
     )
   } else if(gameState === 'night') {
     return (
