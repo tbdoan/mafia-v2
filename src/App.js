@@ -62,7 +62,7 @@ function App() {
         setName={setName}
         />
     );
-  } else if(name === 'spectator') {
+  } else if(name === '') {
     return (
       <Spectator
       db={db}
