@@ -5,7 +5,7 @@ import firebase from 'firebase'
 import Landing from './Landing'
 import Pregame from './Pregame'
 import Night from './Night'
-import Spectator from './Spectator'
+//import Spectator from './Spectator'
 import './App.css';
 
 function App() {
@@ -67,12 +67,13 @@ function App() {
       <Spectator
       db={db}
       gameID={gameID}
-      name={name} 
+      name={name}
       docSnapshot={docSnapshot} />
     )
   } else if(gameState === 'night') {
     return (
       <Night
+        docSnapshot={docSnapshot}
         gameID={gameID}
         name={name}
         db={db}/>
