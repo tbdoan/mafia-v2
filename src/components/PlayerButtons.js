@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Button from '@material-ui/core/Button';
 
 /**
@@ -6,6 +6,8 @@ import Button from '@material-ui/core/Button';
  *
  */
 const PlayerButtons = ({players, customClick}) => {
+    const [disabled, setDisabled] = useState(false);
+
     if(!Array.isArray(players)) {return <br/>}
 
     const compare = ( a, b ) => {
@@ -21,7 +23,10 @@ const PlayerButtons = ({players, customClick}) => {
     console.log(players);
     return players.map((player, index) => {
             return (
-                <Button variant='outlined' onClick={() => customClick(player)} key={index}>
+                <Button variant='outlined'
+                    disabled={disabled}
+                    onClick={() => {customClick(player); setDisabled(true)}}
+                    key={index}>
                 {player.name}
                 </Button>
             )

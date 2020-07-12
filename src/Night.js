@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import firebase from 'firebase'
 
 import PlayerList from './components/PlayerList';
 import PlayerButtons from './components/PlayerButtons'
@@ -10,10 +9,12 @@ const Night = ({gameID, name, db, docSnapshot}) => {
     const [player, setPlayer] = useState(null);
     //ppl with same role as me
     const [allies, setAllies] = useState([]);
-    //everyone 
+    //everyone
     const [players, setPlayers] = useState([]);
     const [action, setAction] = useState('');
-
+    //who got voted
+    const [target, setTarget] = useState(null);
+    const [voteReady, setVoteReady] = useState(3);
     const doc = db.collection('games').doc(gameID);
 
     useEffect(() => {
@@ -21,6 +22,15 @@ const Night = ({gameID, name, db, docSnapshot}) => {
                                     docSnapshot.data().NursePlayers,
                                     docSnapshot.data().DetectivePlayers,
                                     docSnapshot.data().CivilianPlayers);
+        if(docSnapshot.data().MafiaPlayers.length !== 0) {
+            setVoteReady(voteReady-1);
+        }
+        if(docSnapshot.data().NursePlayers.length !== 0) {
+            setVoteReady(voteReady-1);
+        }
+        if(docSnapshot.data().DetectivePlayers.length !== 0) {
+            setVoteReady(voteReady-1);
+        }
         setPlayers(players);
         const player = players.find(p => p.name === name);
         setAllies(docSnapshot.data()[`${player.role}Players`]);
@@ -37,11 +47,32 @@ const Night = ({gameID, name, db, docSnapshot}) => {
     }, [player])
 
     const vote = async (target) => {
+        let voteArray = docSnapshot.data()[`${player.role}Vote`];
+        voteArray.push(target);
         doc.update({
-            [`${player.role}Vote`]: firebase.firestore.FieldValue.arrayUnion(
-                target
-            )
+            [`${player.role}Vote`]: voteArray
         });
+        //if vote is complete
+        if(allies.length === voteArray.length) {
+            const votedPlayer = mode(voteArray);
+            if(player.role === 'Mafia') {
+                doc.update({mafiaTarget: votedPlayer});
+            } else if(player.role === 'Nurse') {
+                doc.update({nurseTarget: votedPlayer});
+            } else if(player.role === 'Detective') {
+                doc.update({detectiveTarget: votedPlayer});
+            }
+            setTarget(votedPlayer);
+        }
+
+        //finds most common occurrence and returns it
+        function mode(arr){
+            return arr.sort((a,b) =>
+                  arr.filter(v => v.name===a.name).length
+                - arr.filter(v => v.name===b.name).length
+            ).pop();
+        }
+
     }
 
     const CivilianUI = () => {
@@ -51,10 +82,16 @@ const Night = ({gameID, name, db, docSnapshot}) => {
         return (
         <Type> Your {player.role}'s are:
             <PlayerList players={allies} />
-            Who would you like to {action}?
-            <PlayerButtons
-                players={players}
-                customClick={vote} />
+            { !target
+            ? <Type>
+                Who would you like to {action}?
+                <PlayerButtons
+                    players={players}
+                    customClick={vote}
+                />
+            </Type>
+            : <Type> The {player.role}s have voted for {target}</Type>
+            }
         </Type>
         )
     }

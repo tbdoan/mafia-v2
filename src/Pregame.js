@@ -83,7 +83,10 @@ const Pregame = ({gameID, db, name, setName}) => {
                 MafiaPlayers: MafiaPlayers,
                 NursePlayers: NursePlayers,
                 DetectivePlayers: DetectivePlayers,
-                CivilianPlayers: CivilianPlayers
+                CivilianPlayers: CivilianPlayers,
+                MafiaVote: [],
+                NurseVote: [],
+                DetectiveVote: []
             });
 
         } else {
