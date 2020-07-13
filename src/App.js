@@ -5,6 +5,7 @@ import firebase from 'firebase'
 import Landing from './Landing'
 import Pregame from './Pregame'
 import Night from './Night'
+import Day from './Day'
 import Spectator from './Spectator'
 import './App.css';
 
@@ -13,6 +14,7 @@ function App() {
   const [gameID, setGameID] = useState('');
   const [gameState, setGameState] = useState('landing');
   const [db, setDb] = useState({});
+  const [doc, setDoc] = useState();
   const [docSnapshot, setDocSnapshot] = useState();
 
   //"constructor"
@@ -38,6 +40,7 @@ function App() {
   useEffect(() => {
     if(gameID !== '') {
       const doc = db.collection('games').doc(gameID);
+      setDoc(doc);
       doc.onSnapshot(docSnapshot => {
         setDocSnapshot(docSnapshot)
         setGameState(docSnapshot.data().gameState);
@@ -65,10 +68,7 @@ function App() {
   } else if(name === '') {
     return (
       <Spectator
-      db={db}
-      gameID={gameID}
-      name={name}
-      docSnapshot={docSnapshot} />
+        docSnapshot={docSnapshot} />
     )
   } else if(gameState === 'night') {
     return (
@@ -77,6 +77,13 @@ function App() {
         gameID={gameID}
         name={name}
         db={db}/>
+    )
+  } else if(gameState === 'day') {
+    return (
+      <Day
+        docSnapshot={docSnapshot}
+        gameID={gameID}
+        />
     )
   }
 }

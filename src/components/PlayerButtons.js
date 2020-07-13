@@ -1,13 +1,12 @@
-import React, {useState} from 'react';
+import React from 'react';
 import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 
 /**
  * List of Players
  *
  */
-const PlayerButtons = ({players, customClick}) => {
-    const [disabled, setDisabled] = useState(false);
-
+const PlayerButtons = ({players, customClick, disabled}) => {
     if(!Array.isArray(players)) {return <br/>}
 
     const compare = ( a, b ) => {
@@ -20,17 +19,28 @@ const PlayerButtons = ({players, customClick}) => {
         return 0;
     }
     players.sort( compare );
-    console.log(players);
-    return players.map((player, index) => {
-            return (
-                <Button variant='outlined'
-                    disabled={disabled}
-                    onClick={() => {customClick(player); setDisabled(true)}}
-                    key={index}>
-                {player.name}
-                </Button>
-            )
-        })
+    return (
+        <ButtonGroup
+        orientation="vertical"
+        color="primary"
+        aria-label="vertical contained primary button group"
+        variant="text"
+        disabled={disabled}
+      >
+        {
+            players.map((player, index) => {
+                return (
+                    <Button
+                        onClick={() => {customClick(player); }}
+                        key={index}>
+                    {player.name}
+                    </Button>
+                )
+            })
+        }
+      </ButtonGroup>
+
+    )
 
 };
 

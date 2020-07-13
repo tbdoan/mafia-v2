@@ -14,7 +14,7 @@ const Night = ({gameID, name, db, docSnapshot}) => {
     const [action, setAction] = useState('');
     //who got voted
     const [target, setTarget] = useState(null);
-    const [voteReady, setVoteReady] = useState(3);
+    const [disabled, setDisabled] = useState(false);
     const doc = db.collection('games').doc(gameID);
 
     useEffect(() => {
@@ -22,15 +22,6 @@ const Night = ({gameID, name, db, docSnapshot}) => {
                                     docSnapshot.data().NursePlayers,
                                     docSnapshot.data().DetectivePlayers,
                                     docSnapshot.data().CivilianPlayers);
-        if(docSnapshot.data().MafiaPlayers.length !== 0) {
-            setVoteReady(voteReady-1);
-        }
-        if(docSnapshot.data().NursePlayers.length !== 0) {
-            setVoteReady(voteReady-1);
-        }
-        if(docSnapshot.data().DetectivePlayers.length !== 0) {
-            setVoteReady(voteReady-1);
-        }
         setPlayers(players);
         const player = players.find(p => p.name === name);
         setAllies(docSnapshot.data()[`${player.role}Players`]);
@@ -46,24 +37,48 @@ const Night = ({gameID, name, db, docSnapshot}) => {
         }
     }, [player])
 
+    useEffect(() => {
+        let voteReady = true;
+
+        if(docSnapshot.data().MafiaPlayers.length !== 0
+            && !('MafiaTarget' in docSnapshot.data())) {
+            console.log('mafia not ready');
+            voteReady = false;
+        }
+        if(docSnapshot.data().NursePlayers.length !== 0
+            && !('NurseTarget' in docSnapshot.data())) {
+                console.log('nurse not ready')
+                voteReady = false;
+        }
+        if(docSnapshot.data().DetectivePlayers.length !== 0
+            && !('DetectiveTarget' in docSnapshot.data())) {
+                console.log('detective not ready')
+                voteReady = false;
+        }
+        if(voteReady) {
+            doc.update({
+                gameState: 'day'
+            });
+        } // eslint-disable-next-line 
+    }, [docSnapshot])
+
     const vote = async (target) => {
+        setDisabled(true);
         let voteArray = docSnapshot.data()[`${player.role}Vote`];
         voteArray.push(target);
         doc.update({
             [`${player.role}Vote`]: voteArray
         });
+
         //if vote is complete
         if(allies.length === voteArray.length) {
             const votedPlayer = mode(voteArray);
-            if(player.role === 'Mafia') {
-                doc.update({mafiaTarget: votedPlayer});
-            } else if(player.role === 'Nurse') {
-                doc.update({nurseTarget: votedPlayer});
-            } else if(player.role === 'Detective') {
-                doc.update({detectiveTarget: votedPlayer});
-            }
+            doc.update({
+                [`${player.role}Target`] : votedPlayer
+            });
             setTarget(votedPlayer);
         }
+
 
         //finds most common occurrence and returns it
         function mode(arr){
@@ -78,19 +93,22 @@ const Night = ({gameID, name, db, docSnapshot}) => {
     const CivilianUI = () => {
         return <Type> You're sleeping. </Type>
     }
+
     const NonCivilianUI = () => {
         return (
         <Type> Your {player.role}'s are:
             <PlayerList players={allies} />
             { !target
             ? <Type>
-                Who would you like to {action}?
+                Who would you like to {action}? <br/>
                 <PlayerButtons
                     players={players}
                     customClick={vote}
+                    disabled={disabled}
                 />
             </Type>
-            : <Type> The {player.role}s have voted for {target}</Type>
+            : <Type> The {player.role}s have chosen to {action} {target.name}.
+                {player.role==='Detective' ? <Type>{target.role}</Type> : <br/> }</Type>
             }
         </Type>
         )
