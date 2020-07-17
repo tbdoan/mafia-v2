@@ -7,6 +7,8 @@ import Pregame from './Pregame'
 import Night from './Night'
 import Day from './Day'
 import Spectator from './Spectator'
+import Type from '@material-ui/core/Typography'
+
 import './App.css';
 
 function App() {
@@ -15,7 +17,20 @@ function App() {
   const [gameState, setGameState] = useState('landing');
   const [db, setDb] = useState({});
   const [doc, setDoc] = useState();
-  const [docSnapshot, setDocSnapshot] = useState();
+  const [docSnapshot, setDocSnapshot] = useState(null);
+
+    /**
+     * alerts user when they leave the page
+     */
+    useEffect(() => {
+        window.addEventListener("beforeunload", function (e) {
+            var confirmationMessage = 'It looks like you have been editing something. '
+                                    + 'If you leave before saving, your changes will be lost.';
+
+            (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+            return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+        })
+    }, []);
 
   //"constructor"
   useEffect(() => {
@@ -42,8 +57,17 @@ function App() {
       const doc = db.collection('games').doc(gameID);
       setDoc(doc);
       doc.onSnapshot(docSnapshot => {
-        setDocSnapshot(docSnapshot)
-        setGameState(docSnapshot.data().gameState);
+        if('MafiaPlayers' in docSnapshot.data() && docSnapshot.data().MafiaPlayers.length === 0) {
+          setGameState('civilianwin');
+        } else if('NursePlayers' in docSnapshot.data() && docSnapshot.data().NursePlayers.length === 0
+            && 'DetectivePlayers' in docSnapshot.data() && docSnapshot.data().DetectivePlayers.length === 0
+            && 'CivilianPlayers' in docSnapshot.data() && docSnapshot.data().CivilianPlayers.length === 0
+        ) {
+          setGameState('mafiawin');
+        } else {
+          setDocSnapshot(docSnapshot);
+          setGameState(docSnapshot.data().gameState);
+        }
       }, err => {
         console.log(`Encountered error: ${err}`);
       });
@@ -60,32 +84,60 @@ function App() {
     return (
       <Pregame
         db={db}
+        doc={doc}
         gameID={gameID}
         name={name}
-        setName={setName}
-        />
+        setName={setName} />
     );
-  } else if(name === '') {
+  } else if(name === '' || gameState === 'dead') {
     return (
-      <Spectator
-        docSnapshot={docSnapshot} />
+      <Type>
+        {gameState === 'dead'
+          ? <Type align='center' variant='h1' color='primary'>You have died</Type>
+          : <div/>}
+        <Spectator
+          docSnapshot={docSnapshot} />
+      </Type>
     )
   } else if(gameState === 'night') {
     return (
       <Night
         docSnapshot={docSnapshot}
-        gameID={gameID}
+        doc={doc}
         name={name}
-        db={db}/>
+        setGameState={setGameState} />
     )
   } else if(gameState === 'day') {
     return (
       <Day
         docSnapshot={docSnapshot}
-        gameID={gameID}
+        name={name}
+        doc={doc}
+        setGameState={setGameState}
         />
     )
+  } else if(gameState === 'civilianwin') {
+    return (
+      <Type align='center' variant='h1'>
+        Civilians Win!
+        <Spectator
+          docSnapshot={docSnapshot} />
+      </Type>
+    )
+  } else if(gameState === 'mafiawin') {
+    return (
+      <Type align='center' variant='h1'>
+        Civilians Win!
+        <Spectator
+          docSnapshot={docSnapshot} />
+      </Type>
+    )
+  } else {
+    return (
+      <h1>error 404</h1>
+    )
   }
+
 }
 
 export default App;

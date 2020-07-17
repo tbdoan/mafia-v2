@@ -9,26 +9,30 @@ import Container from '@material-ui/core/Container';
 import Box from '@material-ui/core/Box';
 import Alert from '@material-ui/lab/Alert'
 
-const Pregame = ({gameID, db, name, setName}) => {
+const Pregame = ({gameID, db, name, setName, doc}) => {
     const [players, setPlayers] = useState([]);
     const [nameEntered, setNameEntered] = useState(false);
     const [showError, setShowError] = useState(false);
 
     useEffect(() => {
         if(gameID !== '') {
-          const doc = db.collection('games').doc(gameID);
           doc.onSnapshot(docSnapshot => {
             setPlayers(docSnapshot.data().players);
           }, err => {
             console.log(`Encountered error: ${err}`);
           });
         }
-      }, [gameID, db]);
+        // eslint-disable-next-line
+      }, [gameID]);
 
     const addPlayer = async (name) => {
+        name = name.replace(/\s/g, '');
+        //allow only alphanumeric
+        if(/[^a-zA-Z0-9]/.test(name)) {
+            return 'Please enter a name using A-z or 1-9';
+        }
         if( typeof players.find(p => p.name === name) === 'undefined' ) {
-            const gameRef = db.collection('games').doc(gameID);
-            await gameRef.update({
+            doc.update({
                 players: firebase.firestore.FieldValue.arrayUnion({
                     'name': `${name}`,
                     'role': 'Civil',
@@ -49,7 +53,6 @@ const Pregame = ({gameID, db, name, setName}) => {
             const numNurse = Math.floor(players.length/4);
             const numDetec = Math.floor(players.length/4);
             let i = 0;
-            const gameRef = db.collection('games').doc(gameID);
             let MafiaPlayers = [];
             let NursePlayers = [];
             let DetectivePlayers = [];
@@ -76,17 +79,18 @@ const Pregame = ({gameID, db, name, setName}) => {
                 i++;
             }
 
-            await gameRef.update({
+            doc.update({
                 gameState: 'night',
-                //TODO: UNCOMMENT LATER
-                //players: firebase.firestore.FieldValue.delete(),
+                players: firebase.firestore.FieldValue.delete(),
                 MafiaPlayers: MafiaPlayers,
                 NursePlayers: NursePlayers,
                 DetectivePlayers: DetectivePlayers,
                 CivilianPlayers: CivilianPlayers,
+                Spectators: [],
                 MafiaVote: [],
                 NurseVote: [],
-                DetectiveVote: []
+                DetectiveVote: [],
+                AllVote: []
             });
 
         } else {
@@ -105,8 +109,6 @@ const Pregame = ({gameID, db, name, setName}) => {
                 { !nameEntered
                     ? <Form label='Enter Name' customSubmit={addPlayer}/>
                     : <Type variant='h4' align='center'>
-                        {/*TODO: delete following line*/}
-                        <Form label='Enter Name' customSubmit={addPlayer}/>
                         Welcome to Mafia, <Type display='inline'
                                             variant='h4'
                                             color='secondary'>{name}</Type>. <br/>

@@ -4,7 +4,7 @@ import PlayerList from './components/PlayerList';
 import PlayerButtons from './components/PlayerButtons'
 import Type from '@material-ui/core/Typography';
 
-const Night = ({gameID, name, db, docSnapshot}) => {
+const Night = ({doc, name, setGameState, docSnapshot}) => {
     //who i am
     const [player, setPlayer] = useState(null);
     //ppl with same role as me
@@ -15,7 +15,6 @@ const Night = ({gameID, name, db, docSnapshot}) => {
     //who got voted
     const [target, setTarget] = useState(null);
     const [disabled, setDisabled] = useState(false);
-    const doc = db.collection('games').doc(gameID);
 
     useEffect(() => {
         const players = [].concat(docSnapshot.data().MafiaPlayers,
@@ -24,8 +23,12 @@ const Night = ({gameID, name, db, docSnapshot}) => {
                                     docSnapshot.data().CivilianPlayers);
         setPlayers(players);
         const player = players.find(p => p.name === name);
+        if(typeof player === 'undefined') {
+            setGameState('dead');
+        } else {
         setAllies(docSnapshot.data()[`${player.role}Players`]);
         setPlayer(player);
+        }
         // eslint-disable-next-line
     }, []);
 
@@ -42,24 +45,26 @@ const Night = ({gameID, name, db, docSnapshot}) => {
 
         if(docSnapshot.data().MafiaPlayers.length !== 0
             && !('MafiaTarget' in docSnapshot.data())) {
-            console.log('mafia not ready');
             voteReady = false;
         }
         if(docSnapshot.data().NursePlayers.length !== 0
             && !('NurseTarget' in docSnapshot.data())) {
-                console.log('nurse not ready')
                 voteReady = false;
         }
         if(docSnapshot.data().DetectivePlayers.length !== 0
             && !('DetectiveTarget' in docSnapshot.data())) {
-                console.log('detective not ready')
                 voteReady = false;
         }
         if(voteReady) {
-            doc.update({
-                gameState: 'day'
-            });
-        } // eslint-disable-next-line 
+            setTimeout(() => {
+                doc.update({
+                    MafiaVote: [],
+                    NurseVote: [],
+                    DetectiveVote: [],
+                    gameState: 'day'
+                });
+            }, 2000);
+        } // eslint-disable-next-line
     }, [docSnapshot])
 
     const vote = async (target) => {
@@ -108,7 +113,7 @@ const Night = ({gameID, name, db, docSnapshot}) => {
                 />
             </Type>
             : <Type> The {player.role}s have chosen to {action} {target.name}.
-                {player.role==='Detective' ? <Type>{target.role}</Type> : <br/> }</Type>
+                {player.role==='Detective' ? <Type display='inline'> ({target.role})</Type> : <br/> }</Type>
             }
         </Type>
         )

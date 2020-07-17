@@ -32,7 +32,8 @@ const PlayerButtons = ({players, customClick, disabled}) => {
                 return (
                     <Button
                         onClick={() => {customClick(player); }}
-                        key={index}>
+                        key={index}
+                        >
                     {player.name}
                     </Button>
                 )

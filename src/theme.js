@@ -17,6 +17,7 @@ const theme = createMuiTheme({
       default: '#fff',
     },
   },
+  viewButtonLabel: { textTransform: "none" }
 });
 
 export default theme;
