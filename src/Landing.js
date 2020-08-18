@@ -74,7 +74,7 @@ const Landing = ({ db, setGameID }) => {
                     : <Form label={'Enter Game Code'} customSubmit={joinGame} />
                 }
             </Box>
-            <Container className={classes.footer}>
+            <Container maxWidth={false} className={classes.footer}>
                 Source code <a href='https://github.com/tbdoan/mafia-v2'>here</a>
             </Container>
         </Container>
