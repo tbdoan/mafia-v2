@@ -44,8 +44,6 @@ const Day = ({name, doc, docSnapshot, setGameState}) => {
     }, []);
 
     useEffect(() => {
-        if(docSnapshot.data().MafiaPlayers.length === 0) {
-        }
         const players = [].concat(docSnapshot.data().MafiaPlayers,
         docSnapshot.data().NursePlayers,
         docSnapshot.data().DetectivePlayers,

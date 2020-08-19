@@ -8,10 +8,10 @@ import Night from './Night'
 import Day from './Day'
 import Spectator from './Spectator'
 import Type from '@material-ui/core/Typography'
-
 import './App.css';
 
 function App() {
+
   const [name, setName] = useState('');
   const [gameID, setGameID] = useState('');
   const [gameState, setGameState] = useState('landing');
@@ -36,7 +36,7 @@ function App() {
   useEffect(() => {
     // Initialize Firebase
     const firebaseConfig = {
-      apiKey: "AIzaSyAhZRf4M9fDkkIXNrkwOfzyX7udTXqBcv0",
+      apiKey: process.env.REACT_APP_API_KEY,
       authDomain: "mafia-cd461.firebaseapp.com",
       databaseURL: "https://mafia-cd461.firebaseio.com",
       projectId: "mafia-cd461",
